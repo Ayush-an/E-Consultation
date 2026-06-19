@@ -1,0 +1,12 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://e-consultation-w60z.onrender.com/api/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://e-consultation-w60z.onrender.com/uploads/:path*"
+    }
+  ]
+}
