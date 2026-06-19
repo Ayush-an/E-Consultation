@@ -1,10 +1,9 @@
 require('dotenv').config();
 const { Sequelize } = require('sequelize');
 
-// Hardcoded fallbacks specifically to bypass dotenvx overriding Render
 const DB_NAME = process.env.DB_NAME || 'defaultdb';
 const DB_USER = process.env.DB_USER || 'avnadmin';
-const DB_PASS = process.env.DB_PASS || 'AVNS_ZwPP_3J0gYgvZ219Bj7';
+const DB_PASS = process.env.DB_PASS; // Removed the hardcoded string!
 const DB_HOST = process.env.DB_HOST || 'mysql-7b0f128-agrawalayushl.i.aivencloud.com';
 const DB_PORT = process.env.DB_PORT || 28086;
 
