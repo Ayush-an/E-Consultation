@@ -187,3 +187,34 @@ exports.doctorLogin = async (req, res) => {
     res.status(500).json({ status: 'error', message: error.message });
   }
 };
+
+exports.adminLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ status: 'error', message: 'Email and password are required.' });
+    }
+
+    const user = await User.findOne({ where: { email } });
+    if (!user) return res.status(401).json({ status: 'error', message: 'Invalid credentials.' });
+
+    if (!['SUPERADMIN', 'ADMIN'].includes(user.role)) {
+      return res.status(403).json({ status: 'error', message: 'Access denied. Admin privileges required.' });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(401).json({ status: 'error', message: 'Invalid credentials.' });
+
+    const token = generateToken(user);
+    logger.success(`Admin logged in: ${user.email}`, 'AUTH');
+    res.status(200).json({
+      status: 'success',
+      data: {
+        user: { id: user.id, name: user.name, email: user.email, role: user.role },
+        token,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};

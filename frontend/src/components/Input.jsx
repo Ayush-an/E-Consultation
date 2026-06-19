@@ -1,8 +1,7 @@
 import { forwardRef } from 'react';
 
 const Input = forwardRef(({
-  label,
-  error,
+  label, error,
   icon: Icon,
   className = '',
   type = 'text',

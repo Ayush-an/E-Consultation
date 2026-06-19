@@ -13,13 +13,15 @@ import ProcessCapsule from '../components/ProcessCapsule';
 
 import Homeimg from '../assets/landingpage/image.png';
 import capsulebg from '../assets/landingpage/capsulebg.jpg';
+
+import backgroundImage from '../assets/landingpage/carelink.png';
+
 const stats = [
   { value: '25K+', label: 'Patients Served' },
   { value: '1.2K+', label: 'Verified Doctors' },
   { value: '4.95', label: 'Trust Score' },
   { value: '100%', label: 'Secure Reports' },
 ];
-import backgroundImage from '../assets/landingpage/home-background.jpg';
 export default function Home() {
   const navigate = useNavigate();
   const { login } = useAuth();
@@ -100,31 +102,32 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-surface-50 selection:bg-primary-100 selection:text-primary-900">
-
-      {/* Hero Section (Split-Screen / Full Background) */}
-      <section className="relative min-h-[85vh] flex items-center overflow-hidden bg-white py-16">
-        <div className="absolute inset-0 z-0">
-          <img
-            src={backgroundImage}
-            className="w-full h-full object-cover opacity-100 brightness-80"
-            alt="Hero Background"
-          />
-          <div className="absolute inset-0 bg-linear-to-b from-white/20 via-white/40 to-white" />
-          <div className="absolute inset-0 medical-grid opacity-20" />
-        </div>
+      {/* HERO SECTION */}
+      <section className="relative pt-8 lg:pt-10 lg:min-h-[90vh] flex items-center overflow-hidden bg-white">
+        {/* Subtle Background Accent */}
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-slate-50/50 skew-x-[-12deg] translate-x-1/4 pointer-events-none" />
+        <div className="absolute top-1/4 right-1/4 w-[40rem] h-[40rem] bg-primary-100/10 rounded-full blur-[120px] pointer-events-none" />
 
         <div className="relative z-10 w-full max-w-7xl mx-auto px-6 sm:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center py-12 lg:py-20">
+          <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center py-8 lg:py-12">
 
-            {/* Left Content (Value Proposition) */}
-            <div className="flex flex-col items-start pt-8 lg:pt-0">
+            {/* Left Content */}
+            <div className="flex flex-col items-start">
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="text-primary-600 font-bold text-[10px] uppercase tracking-[0.3em] mb-4"
+              >
+                Join the Network of 1,200+ Verified Doctors
+              </motion.div>
+
               <motion.h1
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="text-4xl sm:text-5xl xl:text-6xl font-black text-surface-900 leading-none mb-6 font-display uppercase tracking-tight"
+                className="text-4xl sm:text-5xl xl:text-6xl font-bold text-gray-600 leading-none mb-6 font-display uppercase tracking-tight"
               >
                 Clinical <span className="text-primary-600">Precision</span> <br />
-                <span className="text-surface-500">Digitally Defined.</span>
+                <span className="text-gray-600">Digitally Defined.</span>
               </motion.h1>
 
               <motion.p
@@ -135,131 +138,153 @@ export default function Home() {
               >
                 Access synchronized medical care. Professional consultations, secure EHR integration, and digital prescriptions in a high-performance clinical environment.
               </motion.p>
-
-              {/* Inline Stats */}
+              {/* Minimal Stats Bar */}
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                transition={{ delay: 0.3 }}
-                className="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-5 border-t border-surface-100 w-full"
+                transition={{ delay: 0.5 }}
+                className="flex items-center gap-10 mt-16 pt-10 border-t border-surface-100 w-full"
               >
-                {stats.map((stat) => (
-                  <div key={stat.label} className="flex flex-col">
-                    <div className="text-2xl xl:text-3xl font-black text-surface-900 font-display mb-1">{stat.value}</div>
-                    <div className="text-[9px] font-black text-primary-600 uppercase tracking-widest leading-tight">{stat.label}</div>
+                {stats.slice(0, 3).map((stat) => (
+                  <div key={stat.label}>
+                    <div className="text-2xl font-bold text-surface-900 mb-1">{stat.value}</div>
+                    <div className="text-[10px] text-surface-400 font-bold uppercase tracking-widest">{stat.label}</div>
                   </div>
                 ))}
               </motion.div>
             </div>
 
-            {/* Right Content (Registry Action) */}
+            {/* Right — Tablet Mockup Visual */}
             <motion.div
-              initial={{ opacity: 0, x: 30 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-              className="relative"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+              className="relative hidden lg:block"
             >
-              {/* Complex Glow */}
-              <div className="absolute top-1 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[140%] h-[140%] bg-primary-600/5 rounded-full blur-[120px] pointer-events-none" />
+              {/* Tablet Frame */}
+              <div className="relative mx-auto w-full max-w-[420px] aspect-[3/4.2] bg-slate-900 rounded-[3rem] p-3 shadow-[0_50px_100px_-20px_rgba(0,0,0,0.25)] border-[6px] border-slate-800">
+                <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 bg-slate-800 rounded-b-2xl z-20" />
 
-              {/* Form Card */}
-              <div className="relative bg-white p-5 sm:p-6 rounded-3xl border border-surface-100 shadow-[0_32px_120px_-10px_rgba(0,0,0,0.1)] mb-10">
-                <div className="mb-2">
-                  <h2 className="text-2xl font-bold text-primary-600 text-surface-700 text-center tracking-tight uppercase">Free Registration</h2>
+                {/* Tablet Content (The "Screen") */}
+                <div className="w-full h-full bg-white rounded-[2rem] overflow-hidden relative">
+                  {/* Dashboard Header */}
+                  <div className="p-6 border-b border-slate-100 flex items-center justify-center bg-slate-50/50">
+                    <div className="flex justify-center">
+                      <div>
+                        <p className="text-[25px] text-primary-600 text-center font-bold uppercase tracking-wider">Free Registration</p>
+                      </div>
+                    </div>
+
+                  </div>
+
+                  {/* Dashboard Body */}
+                  <div className="p-6 space-y-6">
+
+                    <form onSubmit={handleRegister} className="space-y-3">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[12px] font-black text-gray-800 text-surface-400 tracking-widest mb-2">Name</label>
+                          <input
+                            type="text"
+                            value={regForm.fullName}
+                            onChange={(e) => setRegForm({ ...regForm, fullName: e.target.value })}
+                            className={`w-full bg-surface-50 border ${errors.fullName ? 'border-red-500' : 'border-surface-100'} rounded-xl px-4 h-11 text-xs font-bold text-surface-900 placeholder:text-surface-300 focus:outline-none focus:border-primary-500 focus:bg-white transition-all tracking-wider`}
+                            placeholder="Enter Your Name"
+                          />
+                          {errors.fullName && <p className="text-[9px] text-red-500 mt-1 font-bold">{errors.fullName}</p>}
+                        </div>
+                        <div>
+                          <label className="block text-[12px] font-black text-gray-800 text-surface-400 tracking-widest mb-2">Gender</label>
+                          <select
+                            value={regForm.gender}
+                            onChange={(e) => setRegForm({ ...regForm, gender: e.target.value })}
+                            className={`w-full bg-surface-50 border ${errors.gender ? 'border-red-500' : 'border-surface-100'} rounded-xl px-4 py-3 text-xs font-bold focus:outline-none focus:border-primary-500 focus:bg-white transition-all tracking-wider appearance-none cursor-pointer`}
+                          >
+                            <option value="">Select Gender</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                          </select>
+                          {errors.gender && <p className="text-[9px] text-red-500 mt-1 font-bold">{errors.gender}</p>}
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-[12px] font-black text-gray-800 text-surface-400 tracking-widest mb-2">Date of Birth</label>
+                          <input
+                            type="date"
+                            value={regForm.dob}
+                            onChange={(e) => setRegForm({ ...regForm, dob: e.target.value })}
+                            className={`w-full bg-surface-50 border ${errors.dob ? 'border-red-500' : 'border-surface-100'} rounded-xl px-4 py-3 text-xs font-bold text-surface-600 focus:outline-none focus:border-primary-500 focus:bg-white transition-all`}
+                          />
+                          {errors.dob && <p className="text-[9px] text-red-500 mt-1 font-bold">{errors.dob}</p>}
+                        </div>
+                        <div>
+                          <label className="block text-[12px] font-black text-gray-800 text-surface-400 tracking-widest mb-2">Mobile Number</label>
+                          <input
+                            type="tel"
+                            value={regForm.phone}
+                            onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
+                            className={`w-full bg-surface-50 border ${errors.phone ? 'border-red-500' : 'border-surface-100'} rounded-xl px-4 py-3 text-xs font-bold text-surface-900 placeholder:text-surface-300 focus:outline-none focus:border-primary-500 focus:bg-white transition-all uppercase tracking-widest`}
+                            placeholder="+91..."
+                          />
+                          {errors.phone && <p className="text-[9px] text-red-500 mt-1 font-bold">{errors.phone}</p>}
+                        </div>
+                      </div>
+
+                      <div className="pt-3">
+                        <button
+                          type="submit"
+                          disabled={regLoading}
+                          className="w-full bg-gray-700 text-white h-10 rounded-3xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-primary-700 transition-all shadow-xl cursor-pointer flex items-center justify-center gap-3 transform hover:-translate-y-1 active:scale-95"
+                        >
+                          {regLoading ? <div className="w-4 h-4 border-2 border-surface-900 border-t-transparent rounded-full animate-spin" /> : (
+                            <>
+                              Register
+                              <FiArrowRight className="w-4 h-4" />
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+
+                    {/* Chart Mockup */}
+                    <div className="pt-2">
+                      <div className="h-24 w-full bg-slate-50 rounded-2xl flex items-end justify-between px-4 py-2 gap-1 border border-slate-100">
+                        {[40, 70, 45, 90, 65, 80, 50].map((h, i) => (
+                          <div key={i} className="w-full bg-primary-200 rounded-t-sm" style={{ height: `${h}%` }} />
+                        ))}
+                      </div>
+                    </div>
+                    {/* Feature Bars Section (After Form) */}
+                    <div className="grid sm:grid-cols-2 gap-1 mt-3">
+                      {[
+                        'Medical Advice',
+                        '24/7 Emergency'
+                      ].map((item, i) => (
+                        <div
+                          key={i}
+                          className="bg-gray-700 text-white h-12 rounded-2xl flex items-center justify-center text-xs font-bold uppercase tracking-wider shadow-md"
+                        >
+                          {item}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-
-                <form onSubmit={handleRegister} className="space-y-3">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[12px] font-black text-gray-800 text-surface-400 tracking-widest mb-2">Name</label>
-                      <input
-                        type="text"
-                        value={regForm.fullName}
-                        onChange={(e) => setRegForm({ ...regForm, fullName: e.target.value })}
-                        className={`w-full bg-surface-50 border ${errors.fullName ? 'border-red-500' : 'border-surface-100'} rounded-xl px-4 h-11 text-xs font-bold text-surface-900 placeholder:text-surface-300 focus:outline-none focus:border-primary-500 focus:bg-white transition-all tracking-wider`}
-                        placeholder="Enter Your Name"
-                      />
-                      {errors.fullName && <p className="text-[9px] text-red-500 mt-1 font-bold">{errors.fullName}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-[12px] font-black text-gray-800 text-surface-400 tracking-widest mb-2">Gender</label>
-                      <select
-                        value={regForm.gender}
-                        onChange={(e) => setRegForm({ ...regForm, gender: e.target.value })}
-                        className={`w-full bg-surface-50 border ${errors.gender ? 'border-red-500' : 'border-surface-100'} rounded-xl px-4 py-3 text-xs font-bold focus:outline-none focus:border-primary-500 focus:bg-white transition-all tracking-wider appearance-none cursor-pointer`}
-                      >
-                        <option value="">Select Gender</option>
-                        <option value="MALE">Male</option>
-                        <option value="FEMALE">Female</option>
-                        <option value="OTHER">Other</option>
-                      </select>
-                      {errors.gender && <p className="text-[9px] text-red-500 mt-1 font-bold">{errors.gender}</p>}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[12px] font-black text-gray-800 text-surface-400 tracking-widest mb-2">Date of Birth</label>
-                      <input
-                        type="date"
-                        value={regForm.dob}
-                        onChange={(e) => setRegForm({ ...regForm, dob: e.target.value })}
-                        className={`w-full bg-surface-50 border ${errors.dob ? 'border-red-500' : 'border-surface-100'} rounded-xl px-4 py-3 text-xs font-bold text-surface-600 focus:outline-none focus:border-primary-500 focus:bg-white transition-all`}
-                      />
-                      {errors.dob && <p className="text-[9px] text-red-500 mt-1 font-bold">{errors.dob}</p>}
-                    </div>
-                    <div>
-                      <label className="block text-[12px] font-black text-gray-800 text-surface-400 tracking-widest mb-2">Mobile Number</label>
-                      <input
-                        type="tel"
-                        value={regForm.phone}
-                        onChange={(e) => setRegForm({ ...regForm, phone: e.target.value })}
-                        className={`w-full bg-surface-50 border ${errors.phone ? 'border-red-500' : 'border-surface-100'} rounded-xl px-4 py-3 text-xs font-bold text-surface-900 placeholder:text-surface-300 focus:outline-none focus:border-primary-500 focus:bg-white transition-all uppercase tracking-widest`}
-                        placeholder="+91..."
-                      />
-                      {errors.phone && <p className="text-[9px] text-red-500 mt-1 font-bold">{errors.phone}</p>}
-                    </div>
-                  </div>
-
-                  <div className="pt-3">
-                    <button
-                      type="submit"
-                      disabled={regLoading}
-                      className="w-full bg-gray-700 text-white h-10 rounded-3xl text-[11px] font-black uppercase tracking-[0.3em] hover:bg-primary-700 transition-all shadow-xl cursor-pointer flex items-center justify-center gap-3 transform hover:-translate-y-1 active:scale-95"
-                    >
-                      {regLoading ? <div className="w-4 h-4 border-2 border-surface-900 border-t-transparent rounded-full animate-spin" /> : (
-                        <>
-                          Register
-                          <FiArrowRight className="w-4 h-4" />
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </form>
               </div>
 
-              {/* Feature Bars Section (After Form) */}
-              <div className="grid sm:grid-cols-3 gap-3 mt-6">
-                {[
-                  'Medical Advice',
-                  'Trusted Treatment',
-                  '24/7 Emergency'
-                ].map((item, i) => (
-                  <div
-                    key={i}
-                    className="bg-primary-600 text-white h-14 rounded-2xl flex items-center justify-center text-xs font-bold uppercase tracking-wider shadow-md"
-                  >
-                    {item}
-                  </div>
-                ))}
-              </div>
+              {/* Decorative Blur Orbs */}
+              <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-200/40 rounded-full blur-3xl pointer-events-none" />
+              <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-secondary-200/30 rounded-full blur-3xl pointer-events-none" />
             </motion.div>
           </div>
         </div>
       </section>
 
       {/* Infrastructure Features Section */}
-      <section className="py-0 bg-white border-b border-surface-100 relative">
+      <section className="py-5 pt-10 bg-white border-b border-surface-100 relative">
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-2">
             <div className="max-w-xl">
@@ -290,7 +315,7 @@ export default function Home() {
       </section>
 
       {/* Operational Workflow Section */}
-      <section className="relative py-6 overflow-hidden text-center">
+      <section className="relative pt-5 py-6 overflow-hidden text-center">
 
         {/* BACKGROUND IMAGE */}
         <div className="absolute inset-0 z-0">
@@ -472,12 +497,12 @@ export default function Home() {
             {/* BRAND */}
             <div className="lg:col-span-2">
               <div className="flex items-center gap-3 mb-5">
-                <div className="w-10 h-10 bg-primary-600 rounded-xl flex items-center justify-center">
-                  <FaStethoscope className="text-white w-5 h-5" />
-                </div>
-                <span className="text-xl font-semibold tracking-tight">
-                  E-Consult <span className="text-primary-400">Platform</span>
-                </span>
+                 <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md">
+                              <img src={backgroundImage} alt="Logo" className="w-14 h-14" />
+                            </div>
+                            <span className="text-xl font-semibold text-primary-600">
+                              CareLink
+                            </span>
               </div>
 
               <p className="text-surface-300 text-sm leading-relaxed max-w-md">
@@ -529,6 +554,12 @@ export default function Home() {
                     Doctor Corner
                   </Link>
                 </li>
+                <li>
+                  <Link to="/admin/login" className="text-surface-400 text-sm hover:text-primary-400 transition flex items-center gap-1.5">
+                    <FiShield className="w-3.5 h-3.5 text-primary-400" />
+                    Admin
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -571,6 +602,9 @@ export default function Home() {
                   {l}
                 </a>
               ))}
+              <Link to="/admin/login" className="hover:text-primary-400 transition flex items-center gap-1">
+                <FiShield className="w-3.5 h-3.5" /> Admin
+              </Link>
             </div>
 
           </div>

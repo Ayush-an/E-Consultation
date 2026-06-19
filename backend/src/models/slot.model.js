@@ -1,3 +1,4 @@
+// slot.model.js
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
@@ -39,6 +40,14 @@ module.exports = (sequelize) => {
     status: {
       type: DataTypes.ENUM('AVAILABLE', 'BOOKED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'),
       defaultValue: 'AVAILABLE',
+    },
+    patient_reminder_sent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    doctor_reminder_sent: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   }, {
     timestamps: true,

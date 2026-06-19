@@ -1,3 +1,4 @@
+// prescription.model.js
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
@@ -13,6 +14,10 @@ module.exports = (sequelize) => {
     },
     medicines: {
       type: DataTypes.JSON, // Stores array of medicine objects { name, dosage, duration, instructions }
+      allowNull: true,
+    },
+    consultation_id: {
+      type: DataTypes.UUID,
       allowNull: true,
     },
     notes: {

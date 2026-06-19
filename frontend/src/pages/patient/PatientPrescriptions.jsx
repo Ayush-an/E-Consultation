@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { FiHeart, FiCalendar, FiDownload, FiUser, FiExternalLink } from 'react-icons/fi';
+import { useNavigate } from 'react-router-dom';
+import { FiHeart, FiDownload, FiExternalLink } from 'react-icons/fi';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../hooks/useToast';
-import { useNavigate } from 'react-router-dom';
-import Button from '../../components/Button';
 
 export default function PatientPrescriptions() {
   const { token } = useAuth();
@@ -20,12 +19,12 @@ export default function PatientPrescriptions() {
   const fetchPrescriptions = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/patients/dashboard', {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const res = await fetch('/api/patients/prescriptions', {
+        headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (data.status === 'success') setPrescriptions(data.data.prescriptions || []);
-    } catch (error) {
+      if (data.status === 'success') setPrescriptions(data.data);
+    } catch {
       addToast('Failed to load prescriptions', 'error');
     } finally {
       setLoading(false);
@@ -33,93 +32,76 @@ export default function PatientPrescriptions() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
-      <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center gap-3 mb-2">
-          <div className="w-10 h-10 bg-primary-600 rounded-2xl flex items-center justify-center shadow-lg shadow-primary-500/20">
-            <FiHeart className="w-5 h-5 text-white" />
-          </div>
-          <h1 className="text-2xl font-black text-surface-900 font-display uppercase tracking-tight">Clinical <span className="gradient-text">Prescriptions</span></h1>
-        </div>
-        <p className="text-[10px] text-surface-400 font-black uppercase tracking-[0.2em] leading-none ml-13">Verified Digital Rx & Pharmacological Regimens</p>
-      </motion.div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-xl font-semibold text-gray-800">Prescriptions</h1>
+        <p className="text-sm text-gray-500 mt-0.5">Prescriptions issued by your doctors after consultations</p>
+      </div>
 
       {loading ? (
-        <div className="grid md:grid-cols-2 gap-6">
-          {[1, 2, 3, 4].map(i => (
-            <div key={i} className="h-48 bg-white rounded-[2.5rem] border border-surface-200 animate-pulse" />
+        <div className="grid md:grid-cols-2 gap-4">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-40 bg-white border border-gray-200 rounded-xl animate-pulse" />
           ))}
         </div>
       ) : prescriptions.length > 0 ? (
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-2 gap-4">
           {prescriptions.map((rx, i) => (
             <motion.div
               key={rx.id}
-              initial={{ opacity: 0, y: 15 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.05 }}
-              className="bg-white rounded-[2.5rem] border border-surface-200 shadow-premium overflow-hidden group hover:border-primary-200 transition-all duration-500 flex flex-col"
+              transition={{ delay: i * 0.04 }}
+              className="bg-white border border-gray-200 rounded-xl overflow-hidden flex flex-col"
             >
-              <div className="p-8 flex-1">
-                <div className="flex items-start justify-between mb-6">
-                   <div className="flex items-center gap-4">
-                     <div className="w-12 h-12 bg-primary-50 rounded-xl flex items-center justify-center text-primary-600 shadow-sm border border-primary-100 group-hover:scale-110 transition-transform">
-                       <FiUser className="w-5 h-5" />
-                     </div>
-                     <div>
-                       <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest leading-none mb-1">Prescribed By</p>
-                       <p className="text-sm font-black text-surface-900 uppercase truncate">Dr. {rx.Consultation?.Doctor?.User?.name || 'Medical Specialist'}</p>
-                     </div>
-                   </div>
-                   <div className="text-right">
-                     <p className="text-[10px] font-black text-surface-900 uppercase tracking-widest leading-none mb-1">{new Date(rx.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short' })}</p>
-                     <p className="text-[8px] font-black text-surface-400 uppercase tracking-widest">{new Date(rx.createdAt).getFullYear()}</p>
-                   </div>
+              <div className="p-5 flex-1">
+                <div className="flex items-start justify-between mb-3">
+                  <div>
+                    <p className="text-xs text-gray-400">Prescribed by</p>
+                    <p className="text-sm font-medium text-gray-800">
+                      Dr. {rx.Consultation?.Doctor?.User?.name || 'Doctor'}
+                    </p>
+                  </div>
+                  <p className="text-xs text-gray-500">
+                    {new Date(rx.createdAt).toLocaleDateString('en-IN', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    })}
+                  </p>
                 </div>
-
-                <div className="p-5 bg-surface-50 rounded-2xl border border-surface-100 mb-6 group-hover:border-primary-100 transition-colors">
-                  <p className="text-[9px] font-black text-surface-400 uppercase tracking-widest mb-1.5">Diagnosis</p>
-                  <p className="text-[11px] font-black text-surface-900 uppercase leading-relaxed line-clamp-2">{rx.diagnosis}</p>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-100 mb-3">
+                  <p className="text-xs text-gray-400 mb-0.5">Diagnosis</p>
+                  <p className="text-sm text-gray-800">{rx.diagnosis}</p>
                 </div>
-
-                <div className="flex flex-wrap gap-2 mb-6">
+                <div className="flex flex-wrap gap-1.5">
                   {rx.medicines?.map((m, mi) => (
-                    <span key={mi} className="px-3 py-1.5 bg-emerald-50 text-emerald-700 text-[10px] font-black rounded-xl border border-emerald-100 uppercase tracking-tight">
-                      {m.name}
+                    <span key={mi} className="px-2 py-1 bg-blue-50 text-blue-700 text-xs rounded-md border border-blue-100">
+                      {m.name}{m.dosage ? ` · ${m.dosage}` : ''}
                     </span>
                   ))}
                 </div>
               </div>
-
-              <div className="px-8 py-6 bg-surface-50 border-t border-surface-100 flex items-center gap-3">
-                <Button 
-                  size="sm" 
-                  variant="primary" 
-                  className="flex-1 rounded-xl"
-                  icon={FiExternalLink}
+              <div className="px-5 py-3 border-t border-gray-100 flex gap-2">
+                <button
                   onClick={() => navigate('/pdr', { state: { prescription: rx } })}
+                  className="flex-1 inline-flex items-center justify-center gap-1.5 py-2 bg-blue-500 hover:bg-blue-600 text-white text-xs font-medium rounded-lg transition-colors"
                 >
-                  VIEW FULL Rx
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
-                  className="rounded-xl border-surface-200 bg-white"
-                  icon={FiDownload}
-                  onClick={() => addToast('Digital Rx download initiated.', 'success')}
+                  <FiExternalLink className="w-3.5 h-3.5" /> View Rx
+                </button>
+                <button
+                  onClick={() => navigate('/pdr', { state: { prescription: rx } })}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 border border-gray-200 text-gray-600 text-xs font-medium rounded-lg hover:bg-gray-50"
                 >
-                  DOWNLOAD
-                </Button>
+                  <FiDownload className="w-3.5 h-3.5" />
+                </button>
               </div>
             </motion.div>
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-[3rem] border border-dashed border-surface-200 p-20 text-center">
-          <FiHeart className="w-16 h-16 text-surface-200 mx-auto mb-6" />
-          <p className="text-sm font-black text-surface-400 uppercase tracking-[0.3em]">No Prescriptions Available</p>
-          <p className="text-xs text-surface-300 mt-2 font-medium uppercase tracking-widest">Consult a specialist to receive digital clinical prescriptions.</p>
+        <div className="bg-white border border-dashed border-gray-200 rounded-xl p-12 text-center">
+          <FiHeart className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+          <p className="text-sm text-gray-500">No prescriptions yet</p>
+          <p className="text-xs text-gray-400 mt-1">Prescriptions from your doctor will appear here after consultations</p>
         </div>
       )}
     </div>

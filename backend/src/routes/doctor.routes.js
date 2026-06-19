@@ -11,6 +11,8 @@ router.use(role('DOCTOR'));
 // Profile
 router.get('/profile', doctorController.getProfile);
 router.put('/profile', doctorController.updateProfile);
+const upload = require('../middleware/upload.middleware');
+router.post('/avatar', upload.single('avatar'), doctorController.updateAvatar);
 
 // Slots / Schedule
 router.get('/slots', doctorController.getSlots);

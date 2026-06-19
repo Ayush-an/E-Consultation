@@ -222,8 +222,8 @@ export default function DoctorScheduleHistory() {
                 </div>
 
                 <div className="grid grid-cols-7 gap-1 mb-2 relative z-10">
-                  {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map(d => (
-                    <div key={d} className="text-center text-[10px] font-black text-surface-300 uppercase py-2">{d}</div>
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
+                    <div key={d} className="text-center text-[10px] font-black text-surface-300 uppercase py-2">{d[0]}</div>
                   ))}
                 </div>
 

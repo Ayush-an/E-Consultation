@@ -86,15 +86,15 @@ export default function PatientForm() {
     }));
   };
 
-  const addReport = () => {
-    const timestamp = Date.now();
-    const name = `DOC-SCAN-${timestamp}.pdf`;
-    const mockUrl = `https://www.w3.org/WAI/ER/tests/xhtml/testfiles/resources/pdf/dummy.pdf`; // Sample PDF
-    setForm((prev) => ({ 
-      ...prev, 
-      reports: [...prev.reports, { name, url: mockUrl }] 
+  const addReport = (e) => {
+    const file = e?.target?.files?.[0];
+    if (!file) return;
+    setForm((prev) => ({
+      ...prev,
+      reports: [...prev.reports, { name: file.name, file, pending: true }],
     }));
-    addToast('File securely uploaded.', 'success');
+    addToast('File added. It will be saved when you submit the form.', 'success');
+    e.target.value = '';
   };
 
   const removeReport = (index) => {
@@ -142,11 +142,33 @@ export default function PatientForm() {
     addToast('Processing digital intake...', 'info');
 
     try {
+      const uploadedReports = [];
+      for (const report of form.reports) {
+        if (report.url) {
+          uploadedReports.push({ name: report.name, url: report.url });
+          continue;
+        }
+        if (report.file) {
+          const fd = new FormData();
+          fd.append('document', report.file);
+          fd.append('title', report.name);
+          const upRes = await fetch('/api/patients/documents/upload', {
+            method: 'POST',
+            headers: { Authorization: `Bearer ${token}` },
+            body: fd,
+          });
+          const upData = await upRes.json();
+          if (upData.status === 'success' && upData.data) {
+            uploadedReports.push(upData.data);
+          }
+        }
+      }
+
       const response = await fetch('/api/patients/intake', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           symptoms: form.symptoms,
@@ -155,13 +177,15 @@ export default function PatientForm() {
             allergies: form.allergies,
             medications: form.medications,
             surgeries: form.surgeries,
-            familyHistory: form.familyHistory
+            familyHistory: form.familyHistory,
+            duration: form.duration,
+            severity: form.severity,
           }),
           age: form.age,
           gender: form.gender.toUpperCase(),
           address: form.address,
-          reports: form.reports
-        })
+          reports: uploadedReports,
+        }),
       });
 
       const data = await response.json();
@@ -373,13 +397,11 @@ export default function PatientForm() {
                           </button>
                         </div>
                       ))}
-                      <button
-                        onClick={addReport}
-                        className="sm:col-span-2 border border-dashed border-primary-200 rounded-xl py-2 text-center cursor-pointer hover:bg-primary-50 transition-all group flex items-center justify-center gap-2"
-                      >
-                        <FiUpload className="w-3.5 h-3.5 text-primary-400 group-hover:text-primary-600" />
-                        <span className="text-[10px] font-black text-primary-600 uppercase tracking-widest">Upload Lab Reports</span>
-                      </button>
+                      <label className="sm:col-span-2 border border-dashed border-gray-300 rounded-xl py-3 text-center cursor-pointer hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                        <FiUpload className="w-4 h-4 text-gray-400" />
+                        <span className="text-xs font-medium text-gray-600">Upload lab reports (PDF or image)</span>
+                        <input type="file" accept=".pdf,image/*" onChange={addReport} className="hidden" />
+                      </label>
                     </div>
                   </div>
                 </motion.div>

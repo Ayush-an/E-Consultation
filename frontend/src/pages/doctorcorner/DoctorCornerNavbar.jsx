@@ -4,6 +4,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiArrowRight, FiX } from 'react-icons/fi';
 import { FaStethoscope } from 'react-icons/fa';
 import { HiMenuAlt3 } from 'react-icons/hi';
+import backgroundImage from '../../assets/landingpage/carelink.png';
+
 
 export default function DoctorCornerNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -31,16 +33,16 @@ export default function DoctorCornerNavbar() {
 
           {/* LOGO */}
           <Link to="/doctor-corner" className="flex items-center gap-3 group">
-            <div className="w-10 h-10 bg-primary-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:scale-105 transition-transform">
-              <FaStethoscope className="w-5 h-5 text-white" />
-            </div>
+         <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md">
+                                      <img src={backgroundImage} alt="Logo" className="w-14 h-14" />
+                                    </div>
             <div className="flex flex-col leading-none">
               <span className="text-xl font-black text-surface-900 tracking-tight">
                 Doctor <span className="text-primary-600">Corner</span>
               </span>
-              <span className="text-[9px] font-black uppercase tracking-[0.3em] text-surface-400 mt-1">
-                Clinical Network
-              </span>
+              <span className="text-xl font-semibold text-primary-600">
+                              CareLink
+                            </span>
             </div>
           </Link>
 

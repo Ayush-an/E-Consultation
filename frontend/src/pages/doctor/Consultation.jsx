@@ -84,17 +84,33 @@ export default function Consultation() {
 
   const generatePrescription = async () => {
     if (!diagnosis.trim()) { addToast('Please enter a diagnosis', 'error'); return; }
+
+    let consultationId = consultation?.id;
+
+    if (!consultationId && consultation?.slot_id && token) {
+      try {
+        const res = await fetch(`/api/patients/consultation/slot/${consultation.slot_id}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        const data = await res.json();
+        if (data.status === 'success') consultationId = data.data.id;
+      } catch (e) { console.error(e); }
+    }
+
     try {
-      if (consultation?.id && token) {
+      if (token && isDoctor) {
+        const payload = {
+          diagnosis,
+          medicines: medicines.filter((m) => m.name.trim()),
+          notes: doctorNotes,
+        };
+        if (consultationId) payload.consultationId = consultationId;
+        else if (consultation?.slot_id) payload.slotId = consultation.slot_id;
+
         await fetch('/api/doctor/prescriptions', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
-          body: JSON.stringify({
-            consultationId: consultation.id,
-            diagnosis,
-            medicines: medicines.filter(m => m.name.trim()),
-            notes: doctorNotes
-          })
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+          body: JSON.stringify(payload),
         });
       }
     } catch (e) { console.error(e); }

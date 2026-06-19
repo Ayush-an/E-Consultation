@@ -1,4 +1,4 @@
-const { Slot, Patient, Doctor } = require('../models');
+const { Slot, Patient, Doctor, Consultation } = require('../models');
 const logger = require('../utils/logger');
 
 // Extract times and manipulate them for interval generation
@@ -112,6 +112,21 @@ exports.bookSlot = async (req, res) => {
       patient_id: patient.id,
       status: 'BOOKED'
     });
+
+    const existingConsultation = await Consultation.findOne({ where: { slot_id: slot.id } });
+    if (!existingConsultation) {
+      await Consultation.create({
+        doctor_id: slot.doctor_id,
+        patient_id: patient.id,
+        slot_id: slot.id,
+        status: 'PENDING',
+        room_id: `room-${slot.id}`,
+      });
+    }
+
+    // Fire booking confirmation notifications asynchronously (non-blocking)
+    const { sendBookingConfirmationAlerts } = require('../services/notification.service');
+    sendBookingConfirmationAlerts(slot.id);
 
     logger.success(`Slot ${id} successfully booked for patient ${patient.id}`, 'BOOKING');
     res.status(200).json({ message: 'Slot successfully booked', slot });

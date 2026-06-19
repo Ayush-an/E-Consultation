@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FiLogIn, FiUserPlus, FiX, FiUser } from 'react-icons/fi';
 import { FaStethoscope } from 'react-icons/fa';
 import { HiMenuAlt3 } from 'react-icons/hi';
+import backgroundImage from '../assets/landingpage/carelink.png';
 
 const navLinks = [
   { name: 'Home', path: '/' },
@@ -32,11 +33,11 @@ export default function Navbar() {
 
           {/* LOGO */}
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-9 h-9 bg-primary-600 rounded-xl flex items-center justify-center shadow-md">
-              <FaStethoscope className="w-4 h-4 text-white" />
+            <div className="w-14 h-14 rounded-xl flex items-center justify-center shadow-md">
+              <img src={backgroundImage} alt="Logo" className="w-14 h-14" />
             </div>
-            <span className="text-lg font-semibold text-surface-900">
-              E-Consult
+            <span className="text-xl font-semibold text-primary-600">
+              CareLink
             </span>
           </Link>
 

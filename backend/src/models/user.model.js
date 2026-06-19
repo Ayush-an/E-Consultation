@@ -1,7 +1,8 @@
+// user.model.js
 const { DataTypes } = require('sequelize');
 
 module.exports = (sequelize) => {
-  const User = sequelize.define('User', {
+  const user = sequelize.define('user', {
     id: {
       type: DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
@@ -43,5 +44,5 @@ module.exports = (sequelize) => {
     updatedAt: 'updated_at',
   });
 
-  return User;
+  return user;
 };

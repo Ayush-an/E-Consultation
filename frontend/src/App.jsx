@@ -26,6 +26,9 @@ const PDR = lazy(() => import('./pages/patient/PDR'));
 const DoctorLanding = lazy(() => import('./pages/doctorcorner/DoctorLanding'));
 const DoctorCornerLogin = lazy(() => import('./pages/doctorcorner/DoctorCornerLogin'));
 const DoctorCornerRegistration = lazy(() => import('./pages/doctorcorner/DoctorCornerRegistration'));
+const DoctorProfile = lazy(() => import('./pages/doctor/DoctorProfile'));
+const AdminLogin = lazy(() => import('./pages/login/AdminLogin'));
+const AdminRoutes = lazy(() => import('./admin/routes/AdminRoutes'));
 
 const LoadingFallback = () => (
   <div className="flex items-center justify-center min-h-screen bg-surface-50">
@@ -75,8 +78,12 @@ export default function App() {
           <Route path="/doctor/prescriptions" element={<DoctorDashboard />} />
           <Route path="/doctor/schedule" element={<DoctorSchedule />} />
           <Route path="/doctor/schedule-history" element={<DoctorScheduleHistory />} />
-          <Route path="/doctor/profile" element={<DoctorDashboard />} />
+          <Route path="/doctor/profile" element={<DoctorProfile />} />
           <Route path="/consultation" element={<Consultation />} />
+
+          {/* Super Admin Portal */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/*" element={<AdminRoutes />} />
         </Routes>
       </Suspense>
     </ToastProvider>

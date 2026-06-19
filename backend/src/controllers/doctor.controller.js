@@ -55,6 +55,30 @@ exports.updateProfile = async (req, res) => {
   }
 };
 
+exports.updateAvatar = async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ status: 'error', message: 'No image file uploaded.' });
+    }
+
+    const doctor = await Doctor.findOne({ where: { user_id: req.user.id } });
+    if (!doctor) {
+      return res.status(404).json({ status: 'error', message: 'Doctor profile not found.' });
+    }
+
+    const avatarUrl = `/uploads/avatars/${req.file.filename}`;
+    await doctor.update({ avatar_url: avatarUrl });
+
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile photo updated successfully',
+      data: { avatar_url: avatarUrl }
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: error.message });
+  }
+};
+
 // --- SCHEDULE / SLOTS ---
 exports.createSlot = async (req, res) => {
   try {
@@ -288,12 +312,23 @@ exports.updateNotes = async (req, res) => {
 // --- PRESCRIPTIONS ---
 exports.createPrescription = async (req, res) => {
   try {
-    const { consultation_id, consultationId, diagnosis, medicines, notes } = req.body;
+    const { consultation_id, consultationId, slot_id, slotId, diagnosis, medicines, notes } = req.body;
+    let resolvedConsultationId = consultation_id || consultationId;
+
+    if (!resolvedConsultationId && (slot_id || slotId)) {
+      const consultation = await Consultation.findOne({ where: { slot_id: slot_id || slotId } });
+      if (consultation) resolvedConsultationId = consultation.id;
+    }
+
+    if (!resolvedConsultationId) {
+      return res.status(400).json({ status: 'error', message: 'Consultation ID is required' });
+    }
+
     const prescription = await Prescription.create({
-      consultation_id: consultation_id || consultationId,
+      consultation_id: resolvedConsultationId,
       diagnosis,
       medicines,
-      notes
+      notes,
     });
     res.status(201).json({ status: 'success', data: prescription });
   } catch (error) {

@@ -1,13 +1,22 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { FiCalendar, FiClock, FiUser, FiCheckCircle, FiAlertCircle, FiChevronLeft } from 'react-icons/fi';
-import { FaStethoscope } from 'react-icons/fa';
-import Button from '../../components/Button';
+import { motion } from 'framer-motion';
+import {
+  FiCalendar, FiClock, FiCheckCircle, FiAlertCircle, FiChevronLeft, FiChevronRight, FiHeart
+} from 'react-icons/fi';
 import { useToast } from '../../hooks/useToast';
 import { useAuth } from '../../context/AuthContext';
 
+const categoryIcons = {
+  General: '🩺', Cardiology: 'FiHeart', Dermatology: '🧴', Pediatrics: '👶',
+  Orthopedics: '🦴', Neurology: '🧠', Gynecology: '🌸', Psychiatry: '🧘',
+  ENT: '👂', Dentistry: '🦷',
+};
+
 export default function PatientBooking() {
+  const [step, setStep] = useState(1);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [doctors, setDoctors] = useState([]);
   const [selectedDoctor, setSelectedDoctor] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
@@ -15,10 +24,9 @@ export default function PatientBooking() {
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [loading, setLoading] = useState(false);
   const [fetchingSlots, setFetchingSlots] = useState(false);
-  const [intakeComplete, setIntakeComplete] = useState(true); 
+  const [intakeComplete, setIntakeComplete] = useState(true);
   const [checkingIntake, setCheckingIntake] = useState(true);
-  const [latestIntake, setLatestIntake] = useState(null);
-  
+
   const navigate = useNavigate();
   const { addToast } = useToast();
   const { user, token } = useAuth();
@@ -26,63 +34,49 @@ export default function PatientBooking() {
   useEffect(() => {
     if (token) {
       checkIntakeStatus();
-      fetchDoctors();
+      fetchCategories();
     }
   }, [token]);
 
   useEffect(() => {
-    if (selectedDoctor && selectedDate) {
-      fetchSlots(selectedDoctor, selectedDate);
-    }
+    if (selectedCategory) fetchDoctors(selectedCategory);
+  }, [selectedCategory]);
+
+  useEffect(() => {
+    if (selectedDoctor && selectedDate) fetchSlots(selectedDoctor, selectedDate);
   }, [selectedDoctor, selectedDate]);
 
-  const fetchDoctors = async () => {
+  const headers = { Authorization: `Bearer ${token}` };
+
+  const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/patients/doctors', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      const res = await fetch('/api/patients/doctor-categories', { headers });
       const data = await res.json();
-      if (data.status === 'success') {
-        setDoctors(data.data);
-      } else {
-        addToast(data.message || 'Failed to fetch doctors', 'error');
-      }
-    } catch (err) {
-      console.error('Failed to fetch doctors:', err);
-      addToast('Network error while fetching doctors', 'error');
+      if (data.status === 'success') setCategories(data.data);
+    } catch {
+      addToast('Failed to load doctor categories', 'error');
+    }
+  };
+
+  const fetchDoctors = async (category) => {
+    try {
+      const res = await fetch(`/api/patients/doctors?specialization=${encodeURIComponent(category)}`, { headers });
+      const data = await res.json();
+      if (data.status === 'success') setDoctors(data.data);
+    } catch {
+      addToast('Failed to load doctors', 'error');
     }
   };
 
   const checkIntakeStatus = async () => {
     try {
-      const response = await fetch('/api/patients/intake-status', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        setIntakeComplete(data.data.completed);
-        if (data.data.completed) {
-          fetchIntakeHistory();
-        }
-      }
+      const res = await fetch('/api/patients/intake-status', { headers });
+      const data = await res.json();
+      if (data.status === 'success') setIntakeComplete(data.data.completed);
     } catch (err) {
-      console.error('Failed to check intake status:', err);
+      console.error(err);
     } finally {
       setCheckingIntake(false);
-    }
-  };
-
-  const fetchIntakeHistory = async () => {
-    try {
-      const response = await fetch('/api/patients/intake-history', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      const data = await response.json();
-      if (data.status === 'success' && data.data.length > 0) {
-        setLatestIntake(data.data[0]);
-      }
-    } catch (err) {
-      console.error('Failed to fetch intake history:', err);
     }
   };
 
@@ -91,15 +85,10 @@ export default function PatientBooking() {
     setAvailableSlots([]);
     setSelectedSlot(null);
     try {
-      const response = await fetch(`/api/slots?doctor_id=${docId}&date=${date}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      setAvailableSlots(data);
-    } catch (err) {
-      console.error('Failed to fetch slots:', err);
+      const res = await fetch(`/api/slots?doctor_id=${docId}&date=${date}`, { headers });
+      const data = await res.json();
+      setAvailableSlots(Array.isArray(data) ? data : []);
+    } catch {
       addToast('Error fetching availability', 'error');
     } finally {
       setFetchingSlots(false);
@@ -110,207 +99,191 @@ export default function PatientBooking() {
     if (!selectedSlot) return;
     setLoading(true);
     try {
-      const response = await fetch(`/api/slots/${selectedSlot.id}/book`, {
+      const res = await fetch(`/api/slots/${selectedSlot.id}/book`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ patient_id: user?.id })
+        headers: { 'Content-Type': 'application/json', ...headers },
+        body: JSON.stringify({ patient_id: user?.id }),
       });
-      if (!response.ok) throw new Error('Booking failed');
-
-      addToast(`Appointment scheduled for ${selectedDate} at ${selectedSlot.start_time}`, 'success');
+      if (!res.ok) throw new Error('Booking failed');
+      addToast(`Appointment booked for ${selectedDate} at ${selectedSlot.start_time?.substring(0, 5)}`, 'success');
       setTimeout(() => navigate('/patient-dashboard'), 1500);
-    } catch (err) {
+    } catch {
       addToast('Booking failed. Please try again.', 'error');
     } finally {
       setLoading(false);
     }
   };
 
-  return (
-    <div className="px-6 relative">
-      <div className="max-w-4xl mx-auto relative z-10 w-full pb-20">
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="relative mb-10 text-center">
-          <button
-            onClick={() => navigate('/patient-dashboard')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 p-2 rounded-xl bg-white border border-surface-200 text-surface-400 hover:text-primary-600 hover:border-primary-200 transition-all flex items-center shadow-sm group"
-          >
-            <FiChevronLeft className="w-5 h-5 group-hover:-translate-x-0.5 transition-transform" />
-          </button>
-          <h1 className="text-3xl font-black text-surface-900 font-display uppercase tracking-tight">
-            Schedule <span className="gradient-text">Appointment</span>
-          </h1>
-        </motion.div>
+  const selectCategory = (cat) => {
+    setSelectedCategory(cat);
+    setSelectedDoctor('');
+    setSelectedDate('');
+    setSelectedSlot(null);
+    setStep(2);
+  };
 
-        {!checkingIntake && !intakeComplete && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="mb-8 p-6 bg-amber-50 rounded-3xl border border-amber-200 flex flex-col sm:flex-row items-center justify-between gap-6 overflow-hidden relative"
-          >
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 bg-amber-500 text-white rounded-2xl flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/20">
-                <FiAlertCircle className="w-6 h-6" />
-              </div>
-              <div>
-                <h4 className="text-sm font-black text-amber-900 uppercase tracking-tight">Clinical Intake Required</h4>
-                <p className="text-[11px] text-amber-700 font-medium">Please complete your digital health profile before scheduling a session.</p>
-              </div>
+  const selectDoctor = (id) => {
+    setSelectedDoctor(id);
+    setSelectedDate('');
+    setSelectedSlot(null);
+    setStep(3);
+  };
+
+  return (
+    <div className="w-auto mx-auto space-y-6">
+      <div className="flex items-center gap-3">
+        <button
+          onClick={() => (step > 1 ? setStep(step - 1) : navigate('/patient-dashboard'))}
+          className="p-2 rounded-lg border border-gray-200 text-gray-500 hover:bg-gray-50"
+        >
+          <FiChevronLeft className="w-5 h-5" />
+        </button>
+        <div>
+          <h1 className="text-xl font-semibold text-gray-800">Book Appointment</h1>
+          <p className="text-sm text-gray-500">Step {step} of 3</p>
+        </div>
+      </div>
+
+      {/* Step indicator */}
+      <div className="flex gap-2">
+        {['Category', 'Doctor', 'Schedule'].map((label, i) => (
+          <div
+            key={label}
+            className={`flex-1 h-1 rounded-full ${step > i ? 'bg-blue-500' : 'bg-gray-200'}`}
+          />
+        ))}
+      </div>
+
+      {!checkingIntake && !intakeComplete && (
+        <div className="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+          <FiAlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
+          <div className="flex-1">
+            <p className="text-sm font-medium text-gray-800">Complete your health profile first</p>
+          </div>
+          <button onClick={() => navigate('/patient-form')} className="text-sm font-medium text-blue-600">
+            Complete →
+          </button>
+        </div>
+      )}
+
+      <div className="bg-white border border-gray-200 rounded-xl p-5 md:p-6">
+        {/* Step 1: Category */}
+        {step === 1 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-sm font-semibold text-gray-800 mb-4">Choose doctor category</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+              {categories.map((cat) => (
+                <button
+                  key={cat.name}
+                  onClick={() => selectCategory(cat.name)}
+                  className={`p-4 rounded-xl border text-center transition-colors hover:border-blue-300 hover:bg-blue-50/50 ${
+                    selectedCategory === cat.name ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                  }`}
+                >
+                  <span className="text-2xl">{categoryIcons[cat.name] || '🩺'}</span>
+                  <p className="text-sm font-medium text-gray-800 mt-2">{cat.name}</p>
+                  <p className="text-xs text-gray-400">{cat.count} doctor{cat.count !== 1 ? 's' : ''}</p>
+                </button>
+              ))}
             </div>
-            <Button
-              variant="primary"
-              className="bg-amber-600 hover:bg-amber-700 border-amber-600 w-full sm:w-auto"
-              size="sm"
-              onClick={() => navigate('/patient-form')}
-            >
-              Finish Profile Now
-            </Button>
           </motion.div>
         )}
 
-        <div className="bg-white rounded-[2rem] border border-surface-200 shadow-premium p-6 sm:p-10 space-y-10">
-
-          {/* Step 1: Select Provider & Date */}
-          <div className="grid md:grid-cols-2 gap-8 pb-10 border-b border-surface-100">
-            <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-surface-400 mb-3 flex items-center gap-2">
-                <FaStethoscope className="text-primary-500" /> 1. Select Provider
-              </label>
-              <div className="space-y-3 max-h-60 overflow-y-auto pr-2">
-                {doctors.map(doc => (
-                  <div
-                    key={doc.id}
-                    onClick={() => setSelectedDoctor(doc.id)}
-                    className={`p-4 rounded-2xl border cursor-pointer transition-all duration-300 flex items-center gap-4
-                          ${selectedDoctor === doc.id ? 'border-primary-500 bg-primary-50/50 shadow-md shadow-primary-500/10' : 'border-surface-200 hover:border-surface-300 bg-surface-50'}`}
-                  >
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-black ${selectedDoctor === doc.id ? 'bg-primary-600 text-white' : 'bg-surface-200 text-surface-500'}`}>
-                      {doc.User?.name?.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="text-sm font-black text-surface-900 leading-none">{doc.User?.name}</p>
-                      <p className="text-[9px] font-bold text-surface-500 uppercase tracking-widest">{doc.specialization}</p>
-                    </div>
-                    {selectedDoctor === doc.id && <FiCheckCircle className="ml-auto w-5 h-5 text-primary-600" />}
+        {/* Step 2: Doctor */}
+        {step === 2 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
+            <h2 className="text-sm font-semibold text-gray-800 mb-1">Select a doctor</h2>
+            <p className="text-xs text-gray-500 mb-4">Category: {selectedCategory}</p>
+            <div className="space-y-2 max-h-80 overflow-y-auto">
+              {doctors.length > 0 ? doctors.map((doc) => (
+                <button
+                  key={doc.id}
+                  onClick={() => selectDoctor(doc.id)}
+                  className={`w-full flex items-center gap-3 p-3 rounded-lg border text-left transition-colors ${
+                    selectedDoctor === doc.id ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                >
+                  <div className="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-sm font-semibold text-gray-600">
+                    {doc.User?.name?.charAt(0)}
                   </div>
-                ))}
-                {doctors.length === 0 && <p className="text-xs text-surface-400 italic">No providers available.</p>}
-              </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-800">{doc.User?.name}</p>
+                    <p className="text-xs text-gray-500">{doc.specialization} · {doc.experience || 0} yrs exp</p>
+                  </div>
+                  {selectedDoctor === doc.id && <FiCheckCircle className="w-5 h-5 text-blue-500" />}
+                  {!selectedDoctor && <FiChevronRight className="w-4 h-4 text-gray-300" />}
+                </button>
+              )) : (
+                <p className="text-sm text-gray-400 text-center py-8">No doctors in this category. Try another.</p>
+              )}
+            </div>
+          </motion.div>
+        )}
+
+        {/* Step 3: Date & slots */}
+        {step === 3 && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+            <div>
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-2">
+                <FiCalendar className="w-4 h-4 text-gray-400" /> Select date
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="w-full px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400"
+              />
             </div>
 
             <div>
-              <label className="block text-[10px] font-black uppercase tracking-widest text-surface-400 mb-3 flex items-center gap-2">
-                <FiCalendar className="text-primary-500" /> 2. Target Date
+              <label className="text-sm font-medium text-gray-700 flex items-center gap-2 mb-3">
+                <FiClock className="w-4 h-4 text-gray-400" /> Available time slots
               </label>
-              <div className="p-1">
-                <input
-                  type="date"
-                  value={selectedDate}
-                  min={new Date().toISOString().split('T')[0]}
-                  onChange={(e) => setSelectedDate(e.target.value)}
-                  className="w-full bg-surface-50 border border-surface-200 rounded-2xl px-5 py-4 text-sm font-bold focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all text-surface-700 uppercase tracking-wide"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Step 2: Available Slots */}
-          <div className="min-h-[200px]">
-            <label className="block text-[10px] font-black uppercase tracking-widest text-surface-400 mb-6 flex items-center gap-2">
-              <FiClock className="text-primary-500" /> 3. Secure Time Slot
-            </label>
-
-            {!selectedDoctor || !selectedDate ? (
-              <div className="flex flex-col items-center justify-center py-10 bg-surface-50 rounded-2xl border border-dashed border-surface-200">
-                <FiAlertCircle className="w-6 h-6 text-surface-300 mb-2" />
-                <p className="text-[10px] font-black text-surface-400 uppercase tracking-widest">Select a provider and date first</p>
-              </div>
-            ) : fetchingSlots ? (
-              <div className="flex items-center justify-center py-10">
-                <div className="w-6 h-6 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
-              </div>
-            ) : availableSlots.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-10 bg-red-50/50 rounded-2xl border border-red-100">
-                <FiAlertCircle className="w-6 h-6 text-red-300 mb-2" />
-                <p className="text-[10px] font-black text-red-500 uppercase tracking-widest">No available slots for this date</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3">
-                {availableSlots.map((slot) => (
-                  <button
-                    key={slot.id}
-                    onClick={() => setSelectedSlot(slot)}
-                    className={`px-3 py-3 rounded-xl border text-xs font-black transition-all cursor-pointer shadow-sm
-                       ${selectedSlot?.id === slot.id
-                        ? 'bg-primary-600 border-primary-600 text-white shadow-md shadow-primary-500/20 scale-105'
-                        : 'bg-white border-surface-200 text-surface-900 hover:border-primary-300 hover:text-primary-600'
-                      }`}
-                  >
-                    {slot.start_time.substring(0, 5)}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Checkout */}
-          <AnimatePresence>
-            {selectedSlot && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="pt-8 border-t border-surface-100 bg-primary-50/30 -mx-6 -mb-6 sm:-mx-10 sm:-mb-10 p-6 sm:p-10 rounded-b-[2rem]">
-                  {latestIntake && (
-                    <div className="mb-8 p-6 bg-white rounded-2xl border border-primary-100 shadow-sm">
-                      <div className="flex items-center justify-between mb-4">
-                        <h4 className="text-[10px] font-black text-primary-600 uppercase tracking-widest">Intake History Summary</h4>
-                        <span className="text-[9px] text-surface-400 font-bold">{new Date(latestIntake.createdAt).toLocaleDateString()}</span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div>
-                          <p className="text-[9px] text-surface-400 font-black uppercase tracking-widest mb-1">Chief Complaint</p>
-                          <p className="text-xs font-bold text-surface-700 line-clamp-2">{latestIntake.symptoms}</p>
-                        </div>
-                        <div>
-                          <p className="text-[9px] text-surface-400 font-black uppercase tracking-widest mb-1">Status</p>
-                          <div className="flex items-center gap-1 text-emerald-600">
-                            <FiCheckCircle className="w-3 h-3" />
-                            <span className="text-xs font-bold">PROFILE COMPLETE</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
-                    <div>
-                      <p className="text-[10px] font-black uppercase tracking-widest text-primary-600/60 mb-1">Confirmation</p>
-                      <p className="text-sm font-black text-surface-900">
-                        {selectedDate} at {selectedSlot.start_time.substring(0, 5)}
-                      </p>
-                    </div>
-                    <Button
-                      onClick={handleBook}
-                      loading={loading}
-                      disabled={!intakeComplete}
-                      size="lg"
-                      variant="primary"
-                      className="w-full sm:w-auto px-10 shadow-float"
-                    >
-                      {intakeComplete ? 'Confirm Booking' : 'Profile Required'}
-                    </Button>
-                  </div>
+              {!selectedDate ? (
+                <p className="text-sm text-gray-400 text-center py-6">Pick a date to see available slots</p>
+              ) : fetchingSlots ? (
+                <div className="flex justify-center py-8">
+                  <div className="w-6 h-6 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              ) : availableSlots.length === 0 ? (
+                <p className="text-sm text-gray-400 text-center py-6">No slots available for this date</p>
+              ) : (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                  {availableSlots.map((slot) => (
+                    <button
+                      key={slot.id}
+                      onClick={() => setSelectedSlot(slot)}
+                      className={`py-2.5 rounded-lg border text-sm font-medium transition-colors ${
+                        selectedSlot?.id === slot.id
+                          ? 'bg-blue-500 border-blue-500 text-white'
+                          : 'border-gray-200 text-gray-700 hover:border-blue-300'
+                      }`}
+                    >
+                      {slot.start_time?.substring(0, 5)}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-        </div>
+            {selectedSlot && (
+              <div className="pt-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4">
+                <p className="text-sm text-gray-600">
+                  <span className="font-medium text-gray-800">{selectedDate}</span> at{' '}
+                  <span className="font-medium text-gray-800">{selectedSlot.start_time?.substring(0, 5)}</span>
+                </p>
+                <button
+                  onClick={handleBook}
+                  disabled={loading || !intakeComplete}
+                  className="w-full sm:w-auto px-6 py-2.5 bg-blue-500 hover:bg-blue-600 disabled:opacity-50 text-white text-sm font-medium rounded-lg transition-colors"
+                >
+                  {loading ? 'Booking...' : intakeComplete ? 'Confirm Booking' : 'Complete profile first'}
+                </button>
+              </div>
+            )}
+          </motion.div>
+        )}
       </div>
     </div>
   );

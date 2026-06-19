@@ -1,3 +1,4 @@
+// index.js
 const { sequelize } = require('../config/db');
 
 // Import model definitions

@@ -8,6 +8,7 @@ import { FaStethoscope } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../hooks/useToast';
+import backgroundImage from '../assets/landingpage/carelink.png';
 
 const menuItems = [
   { name: 'DASHBOARD', path: '/doctor', icon: FiGrid },
@@ -30,11 +31,11 @@ export default function Sidebar() {
       fetch('/api/doctor/profile', {
         headers: { 'Authorization': `Bearer ${token}` }
       })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'success') setProfile(data.data);
-      })
-      .catch(err => console.error('Failed to fetch sidebar profile', err));
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'success') setProfile(data.data);
+        })
+        .catch(err => console.error('Failed to fetch sidebar profile', err));
     }
   }, [token, user]);
 
@@ -55,8 +56,8 @@ export default function Sidebar() {
     >
       {/* Institution Logo */}
       <div className="h-16 flex items-center gap-3 px-4 border-b border-surface-100 bg-surface-50/50">
-        <div className="w-9 h-9 bg-primary-600 rounded-lg flex items-center justify-center shadow-md shadow-primary-500/10 shrink-0">
-          <FaStethoscope className="w-4.5 h-4.5 text-white" />
+        <div className="w-9 h-9  flex items-center justify-center shadow-md shadow-primary-500/10 shrink-0">
+          <img src={backgroundImage} alt="CareLink Logo" className="w-full h-full object-contain" />
         </div>
         <AnimatePresence>
           {!collapsed && (
@@ -66,8 +67,7 @@ export default function Sidebar() {
               exit={{ opacity: 0, x: -10 }}
               className="flex flex-col"
             >
-              <span className="text-xs font-black text-surface-900 tracking-tighter leading-none">E-CONSULT</span>
-              <span className="text-[7px] font-black text-primary-600 tracking-[0.2em] uppercase mt-0.5">Institutional</span>
+              <span className="text-md font-black text-gray-700 tracking-tighter leading-none">CareLink</span>
             </motion.div>
           )}
         </AnimatePresence>
@@ -85,7 +85,7 @@ export default function Sidebar() {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                 className="overflow-hidden"
+                className="overflow-hidden"
               >
                 <p className="text-[10px] font-black text-surface-900 uppercase tracking-tight truncate">Dr. {doctorName}</p>
                 <p className="text-[8px] font-black text-surface-400 tracking-widest uppercase truncate">{profile?.specialization || 'Sr. Clinician'}</p>
